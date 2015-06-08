@@ -1,0 +1,65 @@
+Name: tyk
+Cartridge-Short-Name: TYK
+Cartridge-Version: 0.1.0
+Cartridge-Vendor: abemedia
+Website: http://tyk.io
+Display-Name: tyk 1.8.3.3
+Description: An open source, fast and scalable API gateway, portal and API management platform.
+Version: '1.8.3.3'
+Versions:
+- '1.8.3.3'
+Website: https://github.com/abemedia/openshift-tyk-cart
+License: Mozilla Public License Version 2.0
+License-Url: https://github.com/lonelycode/tyk/blob/master/LICENSE.md
+Vendor: Jively Ltd.
+Categories:
+- web_framework
+Help-Topics:
+  Developer Center: https://www.openshift.com/developers
+Cart-Data:
+- Key: OPENSHIFT_TYK_SECRET
+  Type: environment
+  Description: 'tyk secret'
+Provides:
+- tyk-1.8.3.3
+- tyk
+Scaling:
+  Min: 1
+  Max: -1
+Group-Overrides:
+- components:
+  - tyk-1.8.3.3
+  - web_proxy
+Publishes:
+  publish-http-url:
+    Type: "NET_TCP:httpd-proxy-info"
+  publish-gear-endpoint:
+    Type: "NET_TCP:gear-endpoint-info"
+Subscribes:
+  set-env:
+    Type: "ENV:*"
+    Required: false
+  set-db-connection-info:
+    Type: ENV:NET_TCP:db:connection-info
+    Required: false
+  set-redis-connection-info:
+    Type: ENV:NET_TCP:db:redis:connection-info-v1
+    Required: false
+  set-nosql-db-connection-info:
+    Type: ENV:NET_TCP:nosqldb:connection-info
+    Required: false
+Endpoints:
+- Private-IP-Name: IP
+  Private-Port-Name: PORT
+  Private-Port: 19019
+  Public-Port-Name: PROXY_PORT
+  Mappings:
+  - Frontend: ''
+    Backend: ''
+    Options:
+      websocket: true
+  - Frontend: /health
+    Backend: ''
+    Options:
+      health: true
+Install-Build-Required: false

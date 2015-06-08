@@ -1,0 +1,32 @@
+#!/bin/bash
+
+source $OPENSHIFT_CARTRIDGE_SDK_BASH
+
+client_result "Setting up Tyk..."
+
+if [ -z "$TYK_SECRET" ]; then
+    echo "$(date | md5sum)" >> $OPENSHIFT_TYK_DIR/env/TYK_SECRET
+fi
+
+if [ -z "$TYK_MONGODB_URL" ] && [ -n "$OPENSHIFT_MONGODB_DB_URL" ]; then
+    echo "${OPENSHIFT_MONGODB_DB_URL}${OPENSHIFT_APP_NAME}" >> $OPENSHIFT_TYK_DIR/env/TYK_MONGODB_URL
+fi
+
+if [ -z "$TYK_REDIS_HOST" ] && [ -n "$OPENSHIFT_REDIS_HOST" ]; then
+    echo $OPENSHIFT_REDIS_HOST >> $OPENSHIFT_TYK_DIR/env/TYK_REDIS_HOST
+fi
+
+if [ -z "$TYK_REDIS_PORT" ] && [ -n "$OPENSHIFT_REDIS_PORT" ]; then
+    echo $OPENSHIFT_REDIS_PORT >> $OPENSHIFT_TYK_DIR/env/TYK_REDIS_PORT
+fi
+
+if [ -z "$TYK_REDIS_PASSWORD" ] && [ -n "$OPENSHIFT_REDIS_PASSWORD" ]; then
+    echo $OPENSHIFT_REDIS_PASSWORD >> $OPENSHIFT_TYK_DIR/env/TYK_REDIS_PASSWORD
+fi
+
+if [ -n "$TYK_MONGODB_URL" ] && [ -n "$TYK_REDIS_HOST" ] && [ -n "$TYK_REDIS_PORT" ] && [ -n "$TYK_REDIS_PASSWORD" ]; then
+    TYK_CONFIG_FILE=$OPENSHIFT_TYK_DIR/template/tyk.conf
+    mv $TYK_CONFIG_FILE.example $TYK_CONFIG_FILE
+fi
+
+echo "/tyk/health" >> $OPENSHIFT_TYK_DIR/env/HAPROXY_CARTRIDGE_HTTPCHK_URI

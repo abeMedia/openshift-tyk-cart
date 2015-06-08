@@ -1,0 +1,39 @@
+{
+  "listen_port": <%= ENV['OPENSHIFT_TYK_PORT'] %>,
+  "secret": "<%= ENV['TYK_SECRET'] %>",
+  "template_path": "<%= ENV['OPENSHIFT_REPO_DIR'] %>templates",
+  "tyk_js_path": "<%= ENV['OPENSHIFT_REPO_DIR'] %>js/tyk.js",
+  "use_db_app_configs": true,
+  "app_path": "<%= ENV['OPENSHIFT_REPO_DIR'] %>apps",
+  "middleware_path": "<%= ENV['OPENSHIFT_REPO_DIR'] %>middleware",
+  "storage": {
+    "type": "redis",
+    "host": "<%= ENV['TYK_REDIS_HOST'] %>",
+    "port": <%= ENV['TYK_REDIS_PORT'] %>,
+    "password": "<%= ENV['TYK_REDIS_PASSWORD'] %>",
+    "database": 0,
+    "optimisation_max_idle": 100
+  },
+  "enable_analytics": true,
+  "analytics_config": {
+    "type": "mongo",
+    "csv_dir": "<%= ENV['OPENSHIFT_TMP_DIR'] %>",
+    "mongo_url": "<%= ENV['TYK_MONGODB_URL'] %>",
+    "mongo_db_name": "tyk",
+    "mongo_collection": "tyk_analytics",
+    "purge_delay": 100,
+    "ignored_ips": []
+  },
+  "health_check": {
+    "enable_health_checks": true,
+    "health_check_value_timeouts": 60
+  },
+  "optimisations_use_async_session_write": true,
+  "allow_master_keys": false,
+  "policies": {
+    "policy_source": "mongo",
+    "policy_record_name": "tyk_policies"
+  },
+  "hash_keys": false,
+  "suppress_redis_signal_reload": false
+}

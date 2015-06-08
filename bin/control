@@ -1,0 +1,98 @@
+#!/bin/bash
+
+source $OPENSHIFT_CARTRIDGE_SDK_BASH
+
+TYK_EXEC=$OPENSHIFT_TYK_DIR/versions/$OPENSHIFT_TYK_VERSION/tyk
+TYK_CONFIG_FILE=$OPENSHIFT_REPO_DIR/tyk.conf
+TYK_LOG_FILE=$OPENSHIFT_LOG_DIR/tyk.log
+TYK_PID_FILE=$OPENSHIFT_TYK_DIR/tyk.pid
+
+
+function start() {
+    client_result "Starting Tyk"
+
+    if [ -f "$TYK_EXEC" ]; then
+
+        if [ -f "$TYK_CONFIG_FILE.erb" ]; then
+            oo-erb $TYK_CONFIG_FILE.erb > $TYK_CONFIG_FILE
+        fi
+
+        if [ -f "$TYK_CONFIG_FILE" ]; then
+            nohup $TYK_EXEC --conf=$TYK_CONFIG_FILE >> $TYK_LOG_FILE 2>&1 &
+
+            ret=$?
+            npid=$!
+            if [ $ret -eq 0 ]; then
+                echo "$npid" > "$TYK_PID_FILE"
+            else
+                client_result "Application '$OPENSHIFT_APP_NAME' failed to start - $ret" 1>&2
+                exit $ret
+            fi
+        fi
+
+    else
+        echo "WARN: Could not find the compiled application versions/$OPENSHIFT_TYK_VERSION/bin/tyk, will not start"
+    fi
+}
+
+
+function stop() {
+    client_result "Stopping Tyk"
+    
+    if [ -f "$TYK_PID_FILE" ]; then
+        pid=$(cat "$TYK_PID_FILE" 2> /dev/null)
+        kill $pid
+        wait_for_stop $pid
+        rm -rf $TYK_PID_FILE
+    else
+        client_result "Warning: Application '$OPENSHIFT_APP_NAME' server exists without a pid file.  Use force-stop to kill." 1>&2
+    fi
+}
+
+
+function restart() {
+    echo "Restarting Tyk"
+    stop
+    start
+}
+
+
+function status() {
+    res=0
+    output=$(curl -s -m 30 http://$OPENSHIFT_TYK_IP:$OPENSHIFT_TYK_PORT/ &> /dev/null) || res=1
+
+    if [ $res -eq 0 ]
+    then
+        client_result "Tyk is running"
+        client_result "$output"
+    else
+        client_result "Tyk is either stopped or inaccessible"
+    fi
+}
+
+
+function reload() {
+    echo 'bla'
+}
+
+
+function tidy() {
+    rm -rf $OPENSHIFT_LOG_DIR/tyk.log
+}
+
+
+function update() {
+    echo 'bla'
+}
+
+
+case "$1" in
+  start)     start ;;
+  stop)      stop ;;
+  restart)   restart ;;
+  status)    status ;;
+  reload)    reload ;;
+  tidy)      tidy ;;
+  update)    update ;;
+  *)         exit 0
+esac
